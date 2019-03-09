@@ -1,0 +1,21 @@
+{
+  "name": "pzprnode",
+  "version": "0.1.0",
+  "description": "Serving pzprjs images via node",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/robx/pzprnode"
+  },
+  "main": "./app.js",
+  "keywords": [
+    "puzzle",
+    "HTML5"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">= 6.0.0"
+  },
+  "dependencies": {
+    "pzpr": ">= 0.10.0"
+  }
+}
