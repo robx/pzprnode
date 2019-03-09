@@ -41,7 +41,7 @@ function preview(req, res, pzl) {
 }
 
 function page(req, res, pzl) {
-	var type_ = pzl.split('/')[0];
+	var type_ = pzl.match(/^[a-z]*/)[0];
 	res.statusCode = 200;
 	res.setHeader('Content-Type', 'text/html');
 	res.end(template
