@@ -18,11 +18,12 @@ function preview(req, res, pzl) {
 		return;
 	}
 	p.open(pzl, () => {
-		const svg = p.toBuffer();
+		const svg = p.toBuffer('svg', 0, 30);
 		res.statusCode = 200;
 		res.setHeader('Content-Type', 'image/png');
 
-		const gm = child_process.spawn('gm', ['convert', 'SVG:-', 'PNG:-']);
+		//const gm = child_process.spawn('gm', ['convert', 'SVG:-', 'PNG:-']);
+		const gm = child_process.spawn('gm', ['convert', 'SVG:-', '-resize', '300x300', '-background', 'white', '-gravity', 'center', '-extent', '300x300', 'PNG:-']);
 		gm.on('error', (err) => {
 			console.log('error starting gm:', err);
 		});
