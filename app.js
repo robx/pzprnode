@@ -52,6 +52,7 @@ function page(req, res, pzl) {
 
 const server = http.createServer((req, res) => {
 	try {
+		console.log('handling request:', req.url);
 		const u = url.parse(req.url);
 		switch (u.pathname) {
 		case '/pv':
@@ -61,6 +62,7 @@ const server = http.createServer((req, res) => {
 			page(req, res, u.query);
 			break;
 		default:
+			console.log('404', u.pathname);
 			res.statusCode = 404;
 			res.end();
 			break;
