@@ -17,32 +17,26 @@ function preview(req, res, pzl) {
 		res.end();
 		return;
 	}
-	try {
-		p.open(pzl, () => {
-			const svg = p.toBuffer();
-			res.statusCode = 200;
-			res.setHeader('Content-Type', 'image/png');
+	p.open(pzl, () => {
+		const svg = p.toBuffer();
+		res.statusCode = 200;
+		res.setHeader('Content-Type', 'image/png');
 
-			const gm = child_process.spawn('gm', ['convert', 'SVG:-', 'PNG:-']);
-			gm.on('error', (err) => {
-				console.log('error starting gm:', err);
-			});
-			gm.on('close', (code) => {
-				if (code !== 0) {
-					console.log('gm exited with error');
-				}
-				res.end();
-			});
-			gm.stdout.on('data', (data) => {
-				res.write(data);
-			});
-			gm.stdin.end(svg);
+		const gm = child_process.spawn('gm', ['convert', 'SVG:-', 'PNG:-']);
+		gm.on('error', (err) => {
+			console.log('error starting gm:', err);
 		});
-	} catch (error) {
-		console.log("caught error:", error);
-		res.statusCode = 500;
-		res.end();
-	}
+		gm.on('close', (code) => {
+			if (code !== 0) {
+				console.log('gm exited with error');
+			}
+			res.end();
+		});
+		gm.stdout.on('data', (data) => {
+			res.write(data);
+		});
+		gm.stdin.end(svg);
+	});
 }
 
 function page(req, res, pzl) {
@@ -56,18 +50,24 @@ function page(req, res, pzl) {
 }
 
 const server = http.createServer((req, res) => {
-	const u = url.parse(req.url);
-	switch (u.pathname) {
-	case '/pv':
-		preview(req, res, u.query);
-		break;
-	case '/p':
-		page(req, res, u.query);
-		break;
-	default:
-		res.statusCode = 404;
+	try {
+		const u = url.parse(req.url);
+		switch (u.pathname) {
+		case '/pv':
+			preview(req, res, u.query);
+			break;
+		case '/p':
+			page(req, res, u.query);
+			break;
+		default:
+			res.statusCode = 404;
+			res.end();
+			break;
+		}
+	} catch (error) {
+		console.log("caught error:", error);
+		res.statusCode = 500;
 		res.end();
-		break;
 	}
 });
 
