@@ -1,6 +1,6 @@
 const http = require('http');
 const pzpr = require('./dist/pzpr.js');
-const { spawn } = require('child_process');
+const child_process = require('child_process');
 const url = require('url');
 
 const hostname = '127.0.0.1';
@@ -20,7 +20,7 @@ const server = http.createServer((req, res) => {
 		res.statusCode = 200;
 		res.setHeader('Content-Type', 'image/png');
 
-		const gm = spawn('gm', ['convert', 'SVG:-', 'PNG:-']);
+		const gm = child_process.spawn('gm', ['convert', 'SVG:-', 'PNG:-']);
 		gm.on('error', (err) => {
 			console.log('error starting gm:', err);
 		});
