@@ -16,6 +16,7 @@
     "node": ">= 6.0.0"
   },
   "dependencies": {
-    "pzpr": ">= 0.10.0"
+    "pzpr": "file:../pzprjs",
+    "pzpr-puzzlink": "file:../pzpr-puzzlink"
   }
 }
