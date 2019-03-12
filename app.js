@@ -9,13 +9,13 @@ const hostname = '127.0.0.1';
 const port = 3456;
 
 function preview(req, res, pzv) {
-	const canvas = {};
-	const p = new pzpr.Puzzle(canvas);
 	if (!pzv) {
 		res.statusCode = 400;
 		res.end();
 		return;
 	}
+	const canvas = {};
+	const p = new pzpr.Puzzle(canvas);
 	p.open(pzv, () => {
 		const svg = p.toBuffer('svg', 0, 30);
 		res.statusCode = 200;
@@ -58,7 +58,8 @@ function processPost(req, res, callback) {
 	});
 }
 
-const [head, body] = fs.readFileSync('p.html', 'utf8').split(/<title>[^<]*<\/title>/i);
+const rawpage = fs.readFileSync('p.html', 'utf8');
+const [head, body] = rawpage.split(/<title>[^<]*<\/title>/i);
 const metatmpl = fs.readFileSync('meta.template', 'utf8');
 const callbacktmpl = fs.readFileSync('callback.template', 'utf8');
 
@@ -70,26 +71,50 @@ function substitute(tmpl, vars) {
 }
 
 function sendPage(res, pzv, user_id, token) {
-	var type_ = pzv.match(/^[a-z]*/)[0];
-	var vars = {
-		'CANONICAL_URL': 'https://puzz.link/p?' + pzv,
-		'TITLE': type_ + ' puzzle',
-		'PREVIEW_IMG': 'https://puzz.link/pv?' + pzv,
-		'PZV': pzv,
-		'TOKEN': token,
-		'USER_ID': user_id
-	};
-	res.statusCode = 200;
-	res.setHeader('Content-Type', 'text/html');
-	res.write(head);
-	res.write(substitute(metatmpl, vars));
-	if (user_id && token) {
-		res.write(substitute(callbacktmpl, vars));
+	if (!pzv) {
+		res.end(rawpage);
 	}
-	res.end(body);
+	const p = new pzpr.Puzzle();
+	try {
+		p.open(pzv, () => {
+			var title = p.info.en;
+			var size = "";
+			if (!isNaN(p.board.cols) && !isNaN(p.board.rows)) {
+				size = "" + p.board.rows + "×" + p.board.cols;
+			}
+			var desc = 'Solve a ' + p.info.en + ' puzzle online';
+			if (size) {
+				title = size + ' ' + title;
+				desc += ', size ' + size;
+			}
+			desc += '.';
+			var vars = {
+				'CANONICAL_URL': 'https://puzz.link/p?' + pzv,
+				'TITLE': title,
+				'DESCRIPTION': desc,
+				'PREVIEW_IMG': 'https://puzz.link/pv?' + pzv,
+				'PZV': pzv,
+				'TOKEN': token,
+				'USER_ID': user_id
+			};
+			res.statusCode = 200;
+			res.setHeader('Content-Type', 'text/html');
+			res.write(head);
+			res.write(substitute(metatmpl, vars));
+			if (user_id && token) {
+				res.write(substitute(callbacktmpl, vars));
+			}
+			res.end(body);
+		});
+	} catch(error) {
+		console.log('caught error', error, 'sending raw page');
+		res.end(rawpage);
+	}
 }
 
 const server = http.createServer((req, res) => {
+	// TODO: this try block doesn't seem to catch exceptions from the
+	// post handler
 	try {
 		console.log('handling request:', req.url);
 		const u = url.parse(req.url);

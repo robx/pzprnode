@@ -1,10 +1,10 @@
 <title>%%TITLE%%</title>
-<meta name="description" content="html puzzle solver">
+<meta name="description" content="%%DESCRIPTION%%">
 <meta property="og:title" content="%%TITLE%%">
-<meta property="og:description" content="html puzzle applet">
+<meta property="og:description" content="%%DESCRIPTION%%">
+<meta property="og:type" content="website">
 <meta property="og:url" content="%%CANONICAL_URL%%">
 <meta property="og:image" content="%%PREVIEW_IMG%%">
 <meta property="og:image:width" content="300">
 <meta property="og:image:height" content="300">
-<meta property="og:type" content="website">
 
