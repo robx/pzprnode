@@ -21,8 +21,7 @@ function preview(req, res, pzv) {
 		res.statusCode = 200;
 		res.setHeader('Content-Type', 'image/png');
 
-		//const gm = child_process.spawn('gm', ['convert', 'SVG:-', 'PNG:-']);
-		const gm = child_process.spawn('gm', ['convert', 'SVG:-', '-resize', '300x300', '-background', 'white', '-gravity', 'center', '-extent', '300x300', 'PNG:-']);
+		const gm = child_process.spawn('gm', ['convert', 'SVG:-', 'PNG:-']);
 		gm.on('error', (err) => {
 			console.log('error starting gm:', err);
 		});
