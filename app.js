@@ -1,5 +1,5 @@
 const http = require('http');
-const pzpr = require('./dist/pzpr.js');
+const pzpr = require('./js/pzpr.js');
 const child_process = require('child_process');
 const url = require('url');
 const fs = require('fs');
@@ -8,17 +8,15 @@ const querystring = require('querystring');
 const hostname = '127.0.0.1';
 const port = 3456;
 
-const template = fs.readFileSync('p.html', 'utf8');
-
-function preview(req, res, pzl) {
+function preview(req, res, pzv) {
 	const canvas = {};
 	const p = new pzpr.Puzzle(canvas);
-	if (!pzl) {
+	if (!pzv) {
 		res.statusCode = 400;
 		res.end();
 		return;
 	}
-	p.open(pzl, () => {
+	p.open(pzv, () => {
 		const svg = p.toBuffer('svg', 0, 30);
 		res.statusCode = 200;
 		res.setHeader('Content-Type', 'image/png');
@@ -60,17 +58,35 @@ function processPost(req, res, callback) {
 	});
 }
 
-function sendPage(res, pzl, user_id, token) {
-	var type_ = pzl.match(/^[a-z]*/)[0];
+const [head, body] = fs.readFileSync('p.html', 'utf8').split(/<title>[^<]*<\/title>/i);
+const metatmpl = fs.readFileSync('meta.template', 'utf8');
+const callbacktmpl = fs.readFileSync('callback.template', 'utf8');
+
+function substitute(tmpl, vars) {
+	for (var key in vars) {
+		tmpl = tmpl.replace(new RegExp('%%' + key + '%%', 'g'), vars[key]);
+	}
+	return tmpl;
+}
+
+function sendPage(res, pzv, user_id, token) {
+	var type_ = pzv.match(/^[a-z]*/)[0];
+	var vars = {
+		'CANONICAL_URL': 'https://puzz.link/p?' + pzv,
+		'TITLE': type_ + ' puzzle',
+		'PREVIEW_IMG': 'https://puzz.link/pv?' + pzv,
+		'PZV': pzv,
+		'TOKEN': token,
+		'USER_ID': user_id
+	};
 	res.statusCode = 200;
 	res.setHeader('Content-Type', 'text/html');
-	res.end(template
-		.replace('%%OG_URL%%', 'http://puzz.link/p?' + pzl)
-		.replace('%%OG_TITLE%%', type_ + ' puzzle')
-		.replace('%%OG_IMAGE%%', 'http://puzz.link/pv?' + pzl)
-		.replace('%%PZV%%', pzl)
-		.replace('%%TOKEN%%', token)
-		.replace('%%USERID%%', user_id));
+	res.write(head);
+	res.write(substitute(metatmpl, vars));
+	if (user_id && token) {
+		res.write(substitute(callbacktmpl, vars));
+	}
+	res.end(body);
 }
 
 const server = http.createServer((req, res) => {
