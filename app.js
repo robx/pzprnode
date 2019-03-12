@@ -3,6 +3,7 @@ const pzpr = require('./dist/pzpr.js');
 const child_process = require('child_process');
 const url = require('url');
 const fs = require('fs');
+const querystring = require('querystring');
 
 const hostname = '127.0.0.1';
 const port = 3456;
@@ -40,14 +41,36 @@ function preview(req, res, pzl) {
 	});
 }
 
-function page(req, res, pzl) {
+function processPost(req, res, callback) {
+	var queryData = "";
+	if(typeof callback !== 'function') { return null; }
+
+	req.on('data', function(data) {
+		queryData += data;
+		if (queryData.length > 1024) {
+			queryData = ""
+			res.writeHead(413, {'Content-Type': 'text/plain'}).end();
+			req.connection.detroy();
+		}
+	});
+
+	req.on('end', function() {
+		req.post = querystring.parse(queryData);
+		callback();
+	});
+}
+
+function sendPage(res, pzl, user_id, token) {
 	var type_ = pzl.match(/^[a-z]*/)[0];
 	res.statusCode = 200;
 	res.setHeader('Content-Type', 'text/html');
 	res.end(template
 		.replace('%%OG_URL%%', 'http://puzz.link/p?' + pzl)
 		.replace('%%OG_TITLE%%', type_ + ' puzzle')
-		.replace('%%OG_IMAGE%%', 'http://puzz.link/pv?' + pzl));
+		.replace('%%OG_IMAGE%%', 'http://puzz.link/pv?' + pzl)
+		.replace('%%PZV%%', pzl)
+		.replace('%%TOKEN%%', token)
+		.replace('%%USERID%%', user_id));
 }
 
 const server = http.createServer((req, res) => {
@@ -59,7 +82,13 @@ const server = http.createServer((req, res) => {
 			preview(req, res, u.query);
 			break;
 		case '/p':
-			page(req, res, u.query);
+			if (req.method == 'POST') {
+				processPost(req, res, function() {
+					sendPage(res, u.query, req.post.user_id, req.post.token);
+				});
+			} else {
+				sendPage(res, u.query, "", "");
+			}
 			break;
 		default:
 			console.log('404', u.pathname);

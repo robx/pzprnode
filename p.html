@@ -15,6 +15,35 @@
 <link rel="stylesheet" href="./css/sc8.css?3.6.9" type="text/css">
 <script type="text/javascript" src="./js/pzpr.js?0.10.0"></script>
 <script type="text/javascript" src="./js/pzprv3-ui.js?3.6.9"></script>
+<script type="text/javascript">
+var token = "%%TOKEN%%";
+var userid = "%%USERID%%";
+if(token.length >= 10){
+ui.callbackComplete = function(puzzle, check){
+        var xmlhttp = false;
+        if(typeof ActiveXObject !== "undefined"){
+                try { xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");}
+                catch (e) { xmlhttp = false;}
+        }
+        if(!xmlhttp && typeof XMLHttpRequest !== "undefined") {
+                xmlhttp = new XMLHttpRequest();
+        }
+        if(xmlhttp){
+                var data = {
+                        pzv: "%%PZV%%",
+                        user_id: userid,
+                        time: puzzle.getTime()
+                }
+                xmlhttp.open("POST", "/db/api/pzv_solves");
+                xmlhttp.onreadystatechange = function(){};
+                xmlhttp.setRequestHeader("Content-Type", "application/json");
+                xmlhttp.setRequestHeader("Authorization", "Bearer " + token);
+                xmlhttp.send(JSON.stringify(data));
+        }
+};
+}
+</script>
+<TITLE>ぱずぷれv3</TITLE>
 </HEAD>
 
 <BODY>
