@@ -2,26 +2,26 @@
 var token = "%%TOKEN%%";
 var userid = "%%USER_ID%%";
 ui.callbackComplete = function(puzzle, check){
-        var xmlhttp = false;
-        if(typeof ActiveXObject !== "undefined"){
-                try { xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");}
-                catch (e) { xmlhttp = false;}
-        }
-        if(!xmlhttp && typeof XMLHttpRequest !== "undefined") {
-                xmlhttp = new XMLHttpRequest();
-        }
-        if(xmlhttp){
-                var data = {
-                        pzv: "%%PZV%%",
-                        user_id: userid,
-                        time: puzzle.getTime()
-                }
-                xmlhttp.open("POST", "/db/api/pzv_solves");
-                xmlhttp.onreadystatechange = function(){};
-                xmlhttp.setRequestHeader("Content-Type", "application/json");
-                xmlhttp.setRequestHeader("Authorization", "Bearer " + token);
-                xmlhttp.send(JSON.stringify(data));
-        }
+	var xmlhttp = false;
+	if(typeof ActiveXObject !== "undefined"){
+	        try { xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");}
+	        catch (e) { xmlhttp = false;}
+	}
+	if(!xmlhttp && typeof XMLHttpRequest !== "undefined") {
+	        xmlhttp = new XMLHttpRequest();
+	}
+	if(xmlhttp){
+	        var data = {
+	                pzv: "%%PZV%%",
+	                user_id: userid,
+	                time: puzzle.getTime()
+	        }
+	        xmlhttp.open("POST", "/db/api/pzv_solves");
+	        xmlhttp.onreadystatechange = function(){};
+	        xmlhttp.setRequestHeader("Content-Type", "application/json");
+	        xmlhttp.setRequestHeader("Authorization", "Bearer " + token);
+	        xmlhttp.send(JSON.stringify(data));
+	}
 };
 </script>
 
