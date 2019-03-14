@@ -1,7 +1,6 @@
 <script type="text/javascript">
 var token = "%%TOKEN%%";
 var userid = "%%USER_ID%%";
-if(token.length >= 10){
 ui.callbackComplete = function(puzzle, check){
         var xmlhttp = false;
         if(typeof ActiveXObject !== "undefined"){
@@ -24,6 +23,5 @@ ui.callbackComplete = function(puzzle, check){
                 xmlhttp.send(JSON.stringify(data));
         }
 };
-}
 </script>
 
