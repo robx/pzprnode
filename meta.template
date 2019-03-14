@@ -5,4 +5,5 @@
 <meta property="og:type" content="website">
 <meta property="og:url" content="%%CANONICAL_URL%%">
 <meta property="og:image" content="%%PREVIEW_IMG%%">
-
+<meta property="og:locale" content="en_US">
+<meta property="og:locale:alternate" content="ja_JP">
