@@ -63,6 +63,7 @@ const head = parts[0];
 const body = parts[1];
 const metatmpl = fs.readFileSync('meta.template', 'utf8');
 const callbacktmpl = fs.readFileSync('callback.template', 'utf8');
+const callbackanontmpl = fs.readFileSync('callback-anon.template', 'utf8');
 
 function substitute(tmpl, vars) {
 	for (var key in vars) {
@@ -104,6 +105,8 @@ function sendPage(res, pzv, user_id, token) {
 			res.write(substitute(metatmpl, vars));
 			if (user_id && token) {
 				res.write(substitute(callbacktmpl, vars));
+			} else {
+				res.write(substitute(callbackanontmpl, vars));
 			}
 			res.end(body);
 		});
