@@ -58,7 +58,9 @@ function processPost(req, res, callback) {
 }
 
 const rawpage = fs.readFileSync('p.html', 'utf8');
-const [head, body] = rawpage.split(/<title>[^<]*<\/title>/i);
+const parts = rawpage.split(/<title>[^<]*<\/title>/i);
+const head = parts[0];
+const body = parts[1];
 const metatmpl = fs.readFileSync('meta.template', 'utf8');
 const callbacktmpl = fs.readFileSync('callback.template', 'utf8');
 
