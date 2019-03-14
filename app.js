@@ -81,7 +81,7 @@ function sendPage(res, pzv, user_id, token) {
 			if (!isNaN(p.board.cols) && !isNaN(p.board.rows)) {
 				size = "" + p.board.rows + "×" + p.board.cols;
 			}
-			var desc = 'Solve a ' + p.info.en + ' puzzle online';
+			var desc = 'Solve a ' + p.info.en + ' puzzle';
 			if (size) {
 				title = size + ' ' + title;
 				desc += ', size ' + size;
