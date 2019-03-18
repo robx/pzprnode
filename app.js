@@ -34,6 +34,9 @@ function preview(req, res, query) {
 	const p = new pzpr.Puzzle(canvas);
 	p.open(pzv, () => {
 		const svg = p.toBuffer('svg', 0, 30);
+		res.statusCode = 200;
+		res.setHeader('Content-Type', 'image/png');
+
 		var args = ['convert', 'SVG:-', 'PNG:-'];
 		if (thumb) {
 			args = ['convert', 'SVG:-', '-resize', '200x200', 'PNG:-'];
@@ -46,12 +49,9 @@ function preview(req, res, query) {
 			if (code !== 0) {
 				console.log('gm exited with error');
 			}
-			res.statusCode = 400;
 			res.end();
 		});
 		gm.stdout.on('data', (data) => {
-			res.statusCode = 200;
-			res.setHeader('Content-Type', 'image/png');
 			res.write(data);
 		});
 		gm.stdin.end(svg);
