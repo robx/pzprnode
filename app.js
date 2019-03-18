@@ -8,20 +8,37 @@ const querystring = require('querystring');
 const hostname = '127.0.0.1';
 const port = 3456;
 
-function preview(req, res, pzv) {
+function preview(req, res, query) {
+	if (!query) {
+		res.statusCode = 400;
+		res.end();
+		return;
+	}
+	const q = querystring.parse(query);
+	var thumb = false;
+	var pzv = '';
+	for (var key in q) {
+		if (key === 'thumb') {
+			thumb = true;
+		} else if (pzv === '' && q[key] === '') {
+			pzv = key;
+		}
+	}
 	if (!pzv) {
 		res.statusCode = 400;
 		res.end();
 		return;
 	}
+
 	const canvas = {};
 	const p = new pzpr.Puzzle(canvas);
 	p.open(pzv, () => {
 		const svg = p.toBuffer('svg', 0, 30);
-		res.statusCode = 200;
-		res.setHeader('Content-Type', 'image/png');
-
-		const gm = child_process.spawn('gm', ['convert', 'SVG:-', 'PNG:-']);
+		var args = ['convert', 'SVG:-', 'PNG:-'];
+		if (thumb) {
+			args = ['convert', 'SVG:-', '-resize', '200x200', 'PNG:-'];
+		}
+		const gm = child_process.spawn('gm', args);
 		gm.on('error', (err) => {
 			console.log('error starting gm:', err);
 		});
@@ -29,9 +46,12 @@ function preview(req, res, pzv) {
 			if (code !== 0) {
 				console.log('gm exited with error');
 			}
+			res.statusCode = 400;
 			res.end();
 		});
 		gm.stdout.on('data', (data) => {
+			res.statusCode = 200;
+			res.setHeader('Content-Type', 'image/png');
 			res.write(data);
 		});
 		gm.stdin.end(svg);
