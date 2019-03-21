@@ -51,6 +51,9 @@ function preview(req, res, query) {
 			}
 			res.end();
 		});
+		gm.stderr.on('data', (data) => {
+			console.log(data.toString());
+		});
 		gm.stdout.on('data', (data) => {
 			res.write(data);
 		});
