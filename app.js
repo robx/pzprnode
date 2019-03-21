@@ -37,27 +37,27 @@ function preview(req, res, query) {
 		res.statusCode = 200;
 		res.setHeader('Content-Type', 'image/png');
 
-		var args = ['convert', 'SVG:-', 'PNG:-'];
+		var args = [];
 		if (thumb) {
-			args = ['convert', 'SVG:-', '-resize', '200x200', 'PNG:-'];
+			args = ['-w', '200', '-a'];
 		}
-		const gm = child_process.spawn('gm', args);
-		gm.on('error', (err) => {
-			console.log('error starting gm:', err);
+		const convert = child_process.spawn('rsvg-convert', args);
+		convert.on('error', (err) => {
+			console.log('error starting rsvg-convert:', err);
 		});
-		gm.on('close', (code) => {
+		convert.on('close', (code) => {
 			if (code !== 0) {
-				console.log('gm exited with error');
+				console.log('rsvg-convert exited with error');
 			}
 			res.end();
 		});
-		gm.stderr.on('data', (data) => {
+		convert.stderr.on('data', (data) => {
 			console.log(data.toString());
 		});
-		gm.stdout.on('data', (data) => {
+		convert.stdout.on('data', (data) => {
 			res.write(data);
 		});
-		gm.stdin.end(svg);
+		convert.stdin.end(svg);
 	});
 }
 
