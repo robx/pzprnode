@@ -37,11 +37,30 @@ function preview(req, res, query) {
 		res.statusCode = 200;
 		res.setHeader('Content-Type', 'image/png');
 
-		var args = [];
+		var out = res;
+
 		if (thumb) {
-			args = ['-w', '200', '-a'];
+			const args = ['convert', 'PNG:-', '-resize', '200x200', 'PNG:-'];
+			const resize = child_process.spawn('gm', args);
+			out = resize.stdin;
+			resize.on('error', (err) => {
+				console.log('error starting gm:', err);
+			});
+			resize.on('close', (code) => {
+				if (code !== 0) {
+					console.log('gm exited with error');
+				}
+				res.end();
+			});
+			resize.stderr.on('data', (data) => {
+				console.log(data.toString());
+			});
+			resize.stdout.on('data', (data) => {
+				res.write(data);
+			});
 		}
-		const convert = child_process.spawn('rsvg-convert', args);
+
+		const convert = child_process.spawn('rsvg-convert');
 		convert.on('error', (err) => {
 			console.log('error starting rsvg-convert:', err);
 		});
@@ -49,13 +68,13 @@ function preview(req, res, query) {
 			if (code !== 0) {
 				console.log('rsvg-convert exited with error');
 			}
-			res.end();
+			out.end();
 		});
 		convert.stderr.on('data', (data) => {
 			console.log(data.toString());
 		});
 		convert.stdout.on('data', (data) => {
-			res.write(data);
+			out.write(data);
 		});
 		convert.stdin.end(svg);
 	});
