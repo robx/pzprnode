@@ -14,6 +14,9 @@ function preview(req, res, query) {
 		res.end();
 		return;
 	}
+	// querystring parse replaces unencoded '+' by ' ',
+	// but pzprjs wants the literal '+'
+	query = query.replace(/\+/g, '%2B');
 	const q = querystring.parse(query);
 	var thumb = false;
 	var pzv = '';
