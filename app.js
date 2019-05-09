@@ -37,6 +37,8 @@ function preview(req, res, query) {
 	const p = new pzpr.Puzzle(canvas);
 	p.open(pzv, () => {
 		p.setMode('play');
+		p.setConfig('undefcell', false);
+		p.setConfig('autocmp', false);
 		const svg = p.toBuffer('svg', 0, 30);
 		res.statusCode = 200;
 		res.setHeader('Content-Type', 'image/png');
