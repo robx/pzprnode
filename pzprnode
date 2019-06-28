@@ -8,7 +8,7 @@ const querystring = require('querystring');
 
 const pzpr = require('pzpr');
 
-const templates = process.env.TEMPLATES_DIR || '.';
+const templates = process.env.TEMPLATES_DIR || './templates';
 const pzprdir = process.env.PZPR_DIR || '.';
 
 const hostname = '127.0.0.1';
