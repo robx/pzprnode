@@ -1,9 +1,15 @@
+#!/usr/bin/env node
+
 const http = require('http');
-const pzpr = require('./js/pzpr.js');
 const child_process = require('child_process');
 const url = require('url');
 const fs = require('fs');
 const querystring = require('querystring');
+
+const pzpr = require('pzpr');
+
+const templates = process.env.TEMPLATES_DIR || '.';
+const pzprdir = process.env.PZPR_DIR || '.';
 
 const hostname = '127.0.0.1';
 const port = 3456;
@@ -105,13 +111,13 @@ function processPost(req, res, callback) {
 	});
 }
 
-const rawpage = fs.readFileSync('p.html', 'utf8');
+const rawpage = fs.readFileSync(pzprdir + '/p.html', 'utf8');
 const parts = rawpage.split(/<title>[^<]*<\/title>/i);
 const head = parts[0];
 const body = parts[1];
-const metatmpl = fs.readFileSync('meta.template', 'utf8');
-const callbacktmpl = fs.readFileSync('callback.template', 'utf8');
-const callbackanontmpl = fs.readFileSync('callback-anon.template', 'utf8');
+const metatmpl = fs.readFileSync(templates + '/meta.template', 'utf8');
+const callbacktmpl = fs.readFileSync(templates + '/callback.template', 'utf8');
+const callbackanontmpl = fs.readFileSync(templates + '/callback-anon.template', 'utf8');
 
 function substitute(tmpl, vars) {
 	for (var key in vars) {
