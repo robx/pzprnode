@@ -111,32 +111,12 @@ function preview(req, res, query) {
 	});
 }
 
-function processPost(req, res, callback) {
-	var queryData = "";
-	if(typeof callback !== 'function') { return null; }
-
-	req.on('data', function(data) {
-		queryData += data;
-		if (queryData.length > 1024) {
-			queryData = ""
-			res.writeHead(413, {'Content-Type': 'text/plain'}).end();
-			req.connection.detroy();
-		}
-	});
-
-	req.on('end', function() {
-		req.post = querystring.parse(queryData);
-		callback();
-	});
-}
-
 const rawpage = fs.readFileSync(pzprdir + '/p.html', 'utf8');
 const parts = rawpage.split(/<title>[^<]*<\/title>/i);
 const head = parts[0];
 const body = parts[1];
 const metatmpl = fs.readFileSync(templates + '/meta.template', 'utf8');
 const callbacktmpl = fs.readFileSync(templates + '/callback.template', 'utf8');
-const callbackanontmpl = fs.readFileSync(templates + '/callback-anon.template', 'utf8');
 
 function substitute(tmpl, vars) {
 	for (var key in vars) {
@@ -145,7 +125,7 @@ function substitute(tmpl, vars) {
 	return tmpl;
 }
 
-function sendPage(res, pzv, user_id, token) {
+function sendPage(res, pzv) {
 	if (!pzv) {
 		res.end(rawpage);
 	}
@@ -168,19 +148,13 @@ function sendPage(res, pzv, user_id, token) {
 				'TITLE': title,
 				'DESCRIPTION': desc,
 				'PREVIEW_IMG': 'https://puzz.link/pv?' + pzv,
-				'PZV': pzv,
-				'TOKEN': token,
-				'USER_ID': user_id
+				'PZV': pzv
 			};
 			res.statusCode = 200;
 			res.setHeader('Content-Type', 'text/html');
 			res.write(head);
 			res.write(substitute(metatmpl, vars));
-			if (user_id && token) {
-				res.write(substitute(callbacktmpl, vars));
-			} else {
-				res.write(substitute(callbackanontmpl, vars));
-			}
+			res.write(substitute(callbacktmpl, vars));
 			res.end(body);
 		});
 	} catch(error) {
@@ -190,8 +164,6 @@ function sendPage(res, pzv, user_id, token) {
 }
 
 const server = http.createServer((req, res) => {
-	// TODO: this try block doesn't seem to catch exceptions from the
-	// post handler
 	try {
 		console.log('handling request:', req.url);
 		const u = url.parse(req.url);
@@ -200,13 +172,7 @@ const server = http.createServer((req, res) => {
 			preview(req, res, u.query);
 			break;
 		case '/p':
-			if (req.method == 'POST') {
-				processPost(req, res, function() {
-					sendPage(res, u.query, req.post.user_id, req.post.token);
-				});
-			} else {
-				sendPage(res, u.query, "", "");
-			}
+			sendPage(res, u.query);
 			break;
 		default:
 			console.log('404', u.pathname);
@@ -224,4 +190,3 @@ const server = http.createServer((req, res) => {
 server.listen(port, hostname, () => {
 	console.log(`Server running at http://${hostname}:${port}/`);
 });
-
