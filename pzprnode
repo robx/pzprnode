@@ -44,6 +44,17 @@ function preview(req, res, query) {
 	const canvas = {};
 	const p = new pzpr.Puzzle(canvas);
 	p.open(pzv, () => {
+		const cols = p.board.cols;
+		const rows = p.board.rows;
+		var shape = 'square';
+		if (!isNaN(cols) && !isNaN(rows)) {
+			if (rows/cols > 1.5) {
+				shape = 'tall';
+			} else if (cols/rows > 1.5) {
+				shape = 'wide';
+			}
+		}
+
 		p.setMode('play');
 		p.setConfig('undefcell', false);
 		p.setConfig('autocmp', false);
@@ -54,7 +65,13 @@ function preview(req, res, query) {
 		var out = res;
 
 		if (thumb) {
-			const args = ['convert', 'PNG:-', '-resize', '200x200', 'PNG:-'];
+			var geom = '200x200';
+			if (shape === 'wide') {
+				geom = 'x200';
+			} else if (shape === 'tall') {
+				geom = '200x';
+			}
+			const args = ['convert', 'PNG:-', '-trim', '-resize', geom, 'PNG:-'];
 			const resize = child_process.spawn('gm', args);
 			out = resize.stdin;
 			resize.on('error', (err) => {
