@@ -62,8 +62,7 @@ function preview(req, res, query) {
 		res.statusCode = 200;
 		res.setHeader('Content-Type', 'image/png');
 
-		var out = res;
-
+		var args;
 		if (thumb) {
 			var geom = '200x200';
 			if (shape === 'wide') {
@@ -71,43 +70,44 @@ function preview(req, res, query) {
 			} else if (shape === 'tall') {
 				geom = '200x';
 			}
-			const args = ['convert', 'PNG:-', '-trim', '-resize', geom, 'PNG:-'];
-			const resize = child_process.spawn('gm', args);
-			out = resize.stdin;
-			resize.on('error', (err) => {
-				console.log('error starting gm:', err);
-			});
-			resize.on('close', (code) => {
-				if (code !== 0) {
-					console.log('gm exited with error');
-				}
-				res.end();
-			});
-			resize.stderr.on('data', (data) => {
-				console.log(data.toString());
-			});
-			resize.stdout.on('data', (data) => {
-				res.write(data);
-			});
+			args = ['convert', 'PNG:-', '-trim', '-resize', geom, 'PNG:-'];
+		} else {
+			args = ['convert', 'PNG:-', '-trim', 'PNG:-'];
 		}
+		const gm = child_process.spawn('gm', args);
+		gm.on('error', (err) => {
+			console.log('error starting gm:', err);
+		});
+		gm.on('close', (code) => {
+			if (code !== 0) {
+				console.log('gm exited with error');
+			}
+			res.end();
+		});
+		gm.stderr.on('data', (data) => {
+			console.log(data.toString());
+		});
+		gm.stdout.on('data', (data) => {
+			res.write(data);
+		});
 
-		const convert = child_process.spawn('rsvg-convert');
-		convert.on('error', (err) => {
+		const rsvg = child_process.spawn('rsvg-convert');
+		rsvg.on('error', (err) => {
 			console.log('error starting rsvg-convert:', err);
 		});
-		convert.on('close', (code) => {
+		rsvg.on('close', (code) => {
 			if (code !== 0) {
 				console.log('rsvg-convert exited with error');
 			}
-			out.end();
+			gm.stdin.end();
 		});
-		convert.stderr.on('data', (data) => {
+		rsvg.stderr.on('data', (data) => {
 			console.log(data.toString());
 		});
-		convert.stdout.on('data', (data) => {
-			out.write(data);
+		rsvg.stdout.on('data', (data) => {
+			gm.stdin.write(data);
 		});
-		convert.stdin.end(svg);
+		rsvg.stdin.end(svg);
 	});
 }
 
