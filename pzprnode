@@ -20,6 +20,8 @@ function preview(req, res, query) {
 		res.end();
 		return;
 	}
+	// pzprjs embeds some literal '%', but querystring parses them
+	query = query.replace(/%/g, '%25');
 	// querystring parse replaces unencoded '+' by ' ',
 	// but pzprjs wants the literal '+'
 	query = query.replace(/\+/g, '%2B');
