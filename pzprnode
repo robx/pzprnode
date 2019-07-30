@@ -40,6 +40,8 @@ function preview(req, res, query) {
 		res.end();
 		return;
 	}
+	// deal with <type>_edit links
+        pzv = pzv.replace(/_edit/, '');
 
 	const canvas = {};
 	const p = new pzpr.Puzzle(canvas);
