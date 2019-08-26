@@ -61,7 +61,7 @@ function preview(req, res, query) {
 
 		if (svgout) {
 			res.statusCode = 200;
-			res.setHeader('Content-Type', 'image/svg');
+			res.setHeader('Content-Type', 'image/svg+xml');
 			res.end(svg);
 			return;
 		}
