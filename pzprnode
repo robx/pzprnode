@@ -26,11 +26,13 @@ function preview(req, res, query) {
 	// but pzprjs wants the literal '+'
 	query = query.replace(/\+/g, '%2B');
 	const q = querystring.parse(query);
-	var thumb = false;
+	var thumb = false, svgout = false;
 	var pzv = '';
 	for (var key in q) {
 		if (key === 'thumb') {
 			thumb = true;
+		} else if (key === 'svg') {
+			svgout = true;
 		} else if (pzv === '' && q[key] === '') {
 			pzv = key;
 		}
@@ -61,6 +63,14 @@ function preview(req, res, query) {
 		p.setConfig('undefcell', false);
 		p.setConfig('autocmp', false);
 		const svg = p.toBuffer('svg', 0, 30);
+
+		if (svgout) {
+			res.statusCode = 200;
+			res.setHeader('Content-Type', 'image/svg');
+			res.end(svg);
+			return;
+		}
+
 		res.statusCode = 200;
 		res.setHeader('Content-Type', 'image/png');
 
