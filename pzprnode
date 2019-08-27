@@ -4,7 +4,6 @@ const http = require('http');
 const child_process = require('child_process');
 const url = require('url');
 const fs = require('fs');
-const querystring = require('querystring');
 
 const pzpr = require('pzpr');
 
@@ -20,26 +19,22 @@ function preview(req, res, query) {
 		res.end();
 		return;
 	}
-	// pzprjs embeds some literal '%', but querystring parses them
-	query = query.replace(/%/g, '%25');
-	// querystring parse replaces unencoded '+' by ' ',
-	// but pzprjs wants the literal '+'
-	query = query.replace(/\+/g, '%2B');
-	const q = querystring.parse(query);
+	const parts = query.split('&');
 	var thumb = false, svgout = false;
 	var pzv = '';
-	for (var key in q) {
-		if (key === 'thumb') {
+	for (var part of parts) {
+		if (part === 'thumb') {
 			thumb = true;
-		} else if (key === 'svg') {
+		} else if (part === 'svg') {
 			svgout = true;
-		} else if (pzv === '' && q[key] === '') {
-			pzv = key;
+		} else if (pzv === '' && part.match(/^[\w-]+\//)) {
+			pzv = part;
 		}
 	}
 	if (!pzv) {
 		res.statusCode = 400;
 		res.end();
+		console.log('no pzv found:', query);
 		return;
 	}
 	// deal with <type>_edit links
