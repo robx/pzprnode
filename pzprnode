@@ -13,32 +13,40 @@ const pzprdir = process.env.PZPR_DIR || '.';
 const hostname = process.env.HTTP_NAME || '127.0.0.1';
 const port = Number(process.env.HTTP_PORT) || 3456;
 
+function parse_query(query){
+	const parts = query.split('&');
+	var args = {
+		thumb: false,
+		svgout: false,
+		pzv: '',
+	};
+	for (var part of parts) {
+		if (part === 'thumb') {
+			args.thumb = true;
+		} else if (part === 'svg') {
+			args.svgout = true;
+		} else if (args.pzv === '' && part.match(/^[\w-]+\//)) {
+			args.pzv = part;
+		}
+	}
+	return args;
+}
+
 function preview(req, res, query) {
 	if (!query) {
 		res.statusCode = 400;
 		res.end();
 		return;
 	}
-	const parts = query.split('&');
-	var thumb = false, svgout = false;
-	var pzv = '';
-	for (var part of parts) {
-		if (part === 'thumb') {
-			thumb = true;
-		} else if (part === 'svg') {
-			svgout = true;
-		} else if (pzv === '' && part.match(/^[\w-]+\//)) {
-			pzv = part;
-		}
-	}
-	if (!pzv) {
+	var qargs = parse_query(query);
+	if (!qargs.pzv) {
 		res.statusCode = 400;
 		res.end();
 		console.log('no pzv found:', query);
 		return;
 	}
 	// deal with <type>_edit links
-        pzv = pzv.replace(/_edit/, '');
+        var pzv = qargs.pzv.replace(/_edit/, '');
 
 	const canvas = {};
 	const p = new pzpr.Puzzle(canvas);
@@ -59,7 +67,7 @@ function preview(req, res, query) {
 		p.setConfig('autocmp', false);
 		const svg = p.toBuffer('svg', 0, 30);
 
-		if (svgout) {
+		if (qargs.svgout) {
 			res.statusCode = 200;
 			res.setHeader('Content-Type', 'image/svg+xml');
 			res.end(svg);
@@ -70,7 +78,7 @@ function preview(req, res, query) {
 		res.setHeader('Content-Type', 'image/png');
 
 		var args;
-		if (thumb) {
+		if (qargs.thumb) {
 			var geom = '200x200';
 			if (shape === 'wide') {
 				geom = 'x200';
@@ -132,13 +140,14 @@ function substitute(tmpl, vars) {
 	return tmpl;
 }
 
-function sendPage(res, pzv) {
-	if (!pzv) {
+function sendPage(res, query) {
+	var qargs = parse_query(query);
+	if (!qargs.pzv) {
 		res.end(rawpage);
 	}
 	const p = new pzpr.Puzzle();
 	try {
-		p.open(pzv, () => {
+		p.open(qargs.pzv, () => {
 			var title = p.info.en;
 			var size = "";
 			if (!isNaN(p.board.cols) && !isNaN(p.board.rows)) {
@@ -151,11 +160,11 @@ function sendPage(res, pzv) {
 			}
 			desc += '.';
 			var vars = {
-				'CANONICAL_URL': 'https://puzz.link/p?' + pzv,
+				'CANONICAL_URL': 'https://puzz.link/p?' + qargs.pzv,
 				'TITLE': title,
 				'DESCRIPTION': desc,
-				'PREVIEW_IMG': 'https://puzz.link/pv?' + pzv,
-				'PZV': pzv
+				'PREVIEW_IMG': 'https://puzz.link/pv?' + qargs.pzv,
+				'PZV': qargs.pzv
 			};
 			res.statusCode = 200;
 			res.setHeader('Content-Type', 'text/html');
