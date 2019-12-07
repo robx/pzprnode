@@ -170,7 +170,7 @@ function sendPage(res, query) {
 				'CANONICAL_URL': 'https://puzz.link/p?' + qargs.pzv,
 				'TITLE': title,
 				'DESCRIPTION': desc,
-				'PREVIEW_IMG': 'https://puzz.link/pv?' + qargs.pzv,
+				'PREVIEW_IMG': 'https://puzz.link/pv?frame=5&' + qargs.pzv,
 				'PZV': qargs.pzv
 			};
 			res.statusCode = 200;
