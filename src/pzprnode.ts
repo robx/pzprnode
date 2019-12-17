@@ -160,18 +160,36 @@ function pzvopen(pzv: string): Promise<any> {
 	});
 }
 
-function sendPage(res: http.ServerResponse, query: string) {
+interface PuzzleDetails {
+	cols: number;
+	rows: number;
+	title: string;
+}
+
+async function pzvdetails(pzv: string): Promise<PuzzleDetails> {
+	const puzzle = await pzvopen(pzv);
+	return {
+		cols: puzzle.board.cols,
+		rows: puzzle.board.rows,
+		title: puzzle.info.en
+	}
+}
+
+async function sendPage(res: http.ServerResponse, query: string) {
 	var qargs = parse_query(query);
 	if (!qargs.pzv) {
+		res.statusCode = 200;
+		res.setHeader('Content-Type', 'text/html');
 		res.end(rawpage);
 	}
-	pzvopen(qargs.pzv).then(p => {
-		var title = p.info.en;
+	try {
+		const p = await pzvdetails(qargs.pzv);
 		var size = "";
-		if (!isNaN(p.board.cols) && !isNaN(p.board.rows)) {
-			size = "" + p.board.rows + "×" + p.board.cols;
+		if (!isNaN(p.cols) && !isNaN(p.rows)) {
+			size = "" + p.rows + "×" + p.cols;
 		}
-		var desc = 'Solve a ' + p.info.en + ' puzzle';
+		var title = p.title;
+		var desc = 'Solve a ' + p.title + ' puzzle';
 		if (size) {
 			title = size + ' ' + title;
 			desc += ', size ' + size;
@@ -190,12 +208,12 @@ function sendPage(res: http.ServerResponse, query: string) {
 		res.write(substitute(metatmpl, vars));
 		res.write(substitute(callbacktmpl, vars));
 		res.end(body);
-	}).catch(err => {
+	} catch(err) {
 		console.log('caught error', err, 'sending raw page');
 		res.statusCode = 200;
 		res.setHeader('Content-Type', 'text/html');
 		res.end(rawpage);
-	});
+	}
 }
 
 const server = http.createServer((req, res) => {
