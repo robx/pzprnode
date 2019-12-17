@@ -35,6 +35,37 @@ function parse_query(query: string){
 	return args;
 }
 
+function pzvopen(pzv: string): Promise<any> {
+	var p = new pzpr.Puzzle();
+	return new Promise(function(resolve, reject){
+		try {
+			p.open(pzv, () => {
+				resolve(p);
+			});
+		} catch(err) {
+			reject(err);
+		}
+	});
+}
+
+interface PuzzleDetails {
+	pid: string;
+	title: string;
+	cols: number;
+	rows: number;
+}
+
+function pzvdetails(pzv: string): PuzzleDetails {
+	const urldata = pzpr.parser.parseURL(pzv);
+	const info = pzpr.variety(urldata.pid);
+	return {
+		pid: urldata.pid,
+		title: info.en,
+		cols: urldata.cols,
+		rows: urldata.rows
+	}
+}
+
 function preview(req: http.IncomingMessage, res: http.ServerResponse, query: string) {
 	if (!query) {
 		res.statusCode = 400;
@@ -50,6 +81,14 @@ function preview(req: http.IncomingMessage, res: http.ServerResponse, query: str
 	}
 	// deal with <type>_edit links
         var pzv = qargs.pzv.replace(/_edit/, '');
+
+	var details = pzvdetails(pzv);
+	if (details.cols > 100 || details.rows > 100) {
+		res.statusCode = 400;
+		res.end("oversized puzzle");
+		console.log('skipping huge puzzle:', pzv);
+		return;
+	}
 
 	const canvas = {};
 	const p = new pzpr.Puzzle(canvas);
@@ -145,37 +184,6 @@ function substitute(tmpl: string, vars: Record<string, string>): string {
 		tmpl = tmpl.replace(new RegExp('%%' + key + '%%', 'g'), vars[key]);
 	}
 	return tmpl;
-}
-
-function pzvopen(pzv: string): Promise<any> {
-	var p = new pzpr.Puzzle();
-	return new Promise(function(resolve, reject){
-		try {
-			p.open(pzv, () => {
-				resolve(p);
-			});
-		} catch(err) {
-			reject(err);
-		}
-	});
-}
-
-interface PuzzleDetails {
-	pid: string;
-	title: string;
-	cols: number;
-	rows: number;
-}
-
-function pzvdetails(pzv: string): PuzzleDetails {
-	const urldata = pzpr.parser.parseURL(pzv);
-	const info = pzpr.variety(urldata.pid);
-	return {
-		pid: urldata.pid,
-		title: info.en,
-		cols: urldata.cols,
-		rows: urldata.rows
-	}
 }
 
 function sendPage(res: http.ServerResponse, query: string) {
