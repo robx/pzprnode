@@ -136,10 +136,10 @@ function preview(req: http.IncomingMessage, res: http.ServerResponse, query: str
 				args.push('-resize');
 				maskargs = ['composite', '-compose', 'CopyOpacity'];
 				if (shape === Shape.Wide) {
-					args.push('x200');
+					args.push('x150');
 					maskargs.push(imgdir + '/mask-horiz.png');
 				} else if (shape === Shape.Tall) {
-					args.push('200x');
+					args.push('150x');
 					maskargs.push(imgdir + '/mask-vert.png');
 				}
 				args.push('-crop', '200x200');
