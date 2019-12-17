@@ -140,7 +140,7 @@ const body = parts[1];
 const metatmpl = fs.readFileSync(templates + '/meta.template', 'utf8');
 const callbacktmpl = fs.readFileSync(templates + '/callback.template', 'utf8');
 
-function substitute(tmpl: string, vars: Record<string, string>) {
+function substitute(tmpl: string, vars: Record<string, string>): string {
 	for (var key in vars) {
 		tmpl = tmpl.replace(new RegExp('%%' + key + '%%', 'g'), vars[key]);
 	}
