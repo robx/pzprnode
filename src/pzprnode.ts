@@ -130,23 +130,20 @@ function preview(req: http.IncomingMessage, res: http.ServerResponse, query: str
 		const maskbaseargs = ['composite', '-compose', 'CopyOpacity'];
 		var maskargs: string[] = [];
 		if (qargs.thumb) {
-			var geom = '200x200';
-			if (shape === Shape.Wide) {
-				geom = 'x200';
-				maskargs = [
-					'composite', '-compose', 'CopyOpacity',
-					imgdir + '/mask-horiz.png', 'PNG:-', 'PNG:-'
-				];
-			} else if (shape === Shape.Tall) {
-				geom = '200x';
-				maskargs = [
-					'composite', '-compose', 'CopyOpacity',
-					imgdir + '/mask-vert.png', 'PNG:-', 'PNG:-'
-				];
-			}
-			args.push('-resize', geom);
-			if (shape !== Shape.Square) {
+			if (shape === Shape.Square) {
+				args.push('-resize', '200x200');
+			} else {
+				args.push('-resize');
+				maskargs = ['composite', '-compose', 'CopyOpacity'];
+				if (shape === Shape.Wide) {
+					args.push('x200');
+					maskargs.push(imgdir + '/mask-horiz.png');
+				} else if (shape === Shape.Tall) {
+					args.push('200x');
+					maskargs.push(imgdir + '/mask-vert.png');
+				}
 				args.push('-crop', '200x200');
+				maskargs.push('PNG:-', 'PNG:-');
 			}
 		}
 		if (qargs.frame > 0){
