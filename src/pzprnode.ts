@@ -130,13 +130,13 @@ function preview(req: http.IncomingMessage, res: http.ServerResponse, query: str
 				geom = 'x200';
 				maskargs = [
 					'composite', '-compose', 'CopyOpacity',
-					IMG_DIR + '/mask-horiz.png', 'PNG:-', 'PNG:-'
+					imgdir + '/mask-horiz.png', 'PNG:-', 'PNG:-'
 				];
 			} else if (shape === 'tall') {
 				geom = '200x';
 				maskargs = [
 					'composite', '-compose', 'CopyOpacity',
-					IMG_DIR + '/mask-vert.png', 'PNG:-', 'PNG:-'
+					imgdir + '/mask-vert.png', 'PNG:-', 'PNG:-'
 				];
 			}
 			args.push('-resize', geom);
