@@ -97,12 +97,17 @@ function preview(req: http.IncomingMessage, res: http.ServerResponse, query: str
 	p.open(pzv, () => {
 		const cols = details.cols;
 		const rows = details.rows;
-		var shape = 'square';
+		enum Shape {
+			Square,
+			Tall,
+			Wide,
+		}
+		var shape = Shape.Square;
 		if (!isNaN(cols) && !isNaN(rows)) {
 			if (rows/cols > 1.5) {
-				shape = 'tall';
+				shape = Shape.Tall;
 			} else if (cols/rows > 1.5) {
-				shape = 'wide';
+				shape = Shape.Wide;
 			}
 		}
 
@@ -126,13 +131,13 @@ function preview(req: http.IncomingMessage, res: http.ServerResponse, query: str
 		var maskargs: string[] = [];
 		if (qargs.thumb) {
 			var geom = '200x200';
-			if (shape === 'wide') {
+			if (shape === Shape.Wide) {
 				geom = 'x200';
 				maskargs = [
 					'composite', '-compose', 'CopyOpacity',
 					imgdir + '/mask-horiz.png', 'PNG:-', 'PNG:-'
 				];
-			} else if (shape === 'tall') {
+			} else if (shape === Shape.Tall) {
 				geom = '200x';
 				maskargs = [
 					'composite', '-compose', 'CopyOpacity',
@@ -140,7 +145,7 @@ function preview(req: http.IncomingMessage, res: http.ServerResponse, query: str
 				];
 			}
 			args.push('-resize', geom);
-			if (shape === 'wide' || shape === 'tall') {
+			if (shape !== Shape.Square) {
 				args.push('-crop', '200x200');
 			}
 		}
