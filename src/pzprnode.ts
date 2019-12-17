@@ -4,6 +4,7 @@ import http = require('http');
 import child_process = require('child_process');
 import url = require('url');
 import fs = require('fs');
+import stream = require('stream');
 
 import pzpr = require('pzpr');
 
@@ -93,8 +94,8 @@ function preview(req: http.IncomingMessage, res: http.ServerResponse, query: str
 	const canvas = {};
 	const p = new pzpr.Puzzle(canvas);
 	p.open(pzv, () => {
-		const cols = p.board.cols;
-		const rows = p.board.rows;
+		const cols = details.cols;
+		const rows = details.rows;
 		var shape = 'square';
 		if (!isNaN(cols) && !isNaN(rows)) {
 			if (rows/cols > 1.5) {
@@ -120,20 +121,54 @@ function preview(req: http.IncomingMessage, res: http.ServerResponse, query: str
 		res.setHeader('Content-Type', 'image/png');
 
 		var args = ['convert', 'PNG:-', '-trim'];
+		const maskbaseargs = ['composite', '-compose', 'CopyOpacity'];
+		var maskargs: string[] = [];
 		if (qargs.thumb) {
 			var geom = '200x200';
 			if (shape === 'wide') {
 				geom = 'x200';
+				maskargs = [
+					'composite', '-compose', 'CopyOpacity',
+					'img/mask-horiz.png', 'PNG:-', 'PNG:-'
+				];
 			} else if (shape === 'tall') {
 				geom = '200x';
+				maskargs = [
+					'composite', '-compose', 'CopyOpacity',
+					'img/mask-vert.png', 'PNG:-', 'PNG:-'
+				];
 			}
 			args.push('-resize', geom);
+			if (shape === 'wide' || shape === 'tall') {
+				args.push('-crop', '200x200');
+			}
 		}
 		if (qargs.frame > 0){
 			var border = '' + qargs.frame + '%';
 			args.push('-bordercolor', 'none', '-border', border);
 		}
 		args.push('PNG:-');
+
+		var gmout: stream.Writable = res;
+		if (maskargs.length > 0) {
+			const gmcompose = child_process.spawn('gm', maskargs);
+			gmout = gmcompose.stdin;
+			gmcompose.on('error', (err) => {
+				console.log('error starting gm:', err);
+			});
+			gmcompose.on('close', (code) => {
+				if (code !== 0) {
+					console.log('gm exited with error');
+				}
+				res.end();
+			});
+			gmcompose.stderr.on('data', (data) => {
+				console.log(data.toString());
+			});
+			gmcompose.stdout.on('data', (data) => {
+				res.write(data);
+			});
+		}
 
 		const gm = child_process.spawn('gm', args);
 		gm.on('error', (err) => {
@@ -143,13 +178,13 @@ function preview(req: http.IncomingMessage, res: http.ServerResponse, query: str
 			if (code !== 0) {
 				console.log('gm exited with error');
 			}
-			res.end();
+			gmout.end();
 		});
 		gm.stderr.on('data', (data) => {
 			console.log(data.toString());
 		});
 		gm.stdout.on('data', (data) => {
-			res.write(data);
+			gmout.write(data);
 		});
 
 		const rsvg = child_process.spawn('rsvg-convert');
