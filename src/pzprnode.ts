@@ -13,7 +13,7 @@ const pzprdir = process.env.PZPR_DIR || '.';
 const hostname = process.env.HTTP_NAME || '127.0.0.1';
 const port = Number(process.env.HTTP_PORT) || 3456;
 
-function parse_query(query){
+function parse_query(query: string){
 	const parts = query.split('&');
 	var args = {
 		thumb: false,
@@ -35,7 +35,7 @@ function parse_query(query){
 	return args;
 }
 
-function preview(req, res, query) {
+function preview(req: http.IncomingMessage, res: http.ServerResponse, query: string) {
 	if (!query) {
 		res.statusCode = 400;
 		res.end();
@@ -140,14 +140,14 @@ const body = parts[1];
 const metatmpl = fs.readFileSync(templates + '/meta.template', 'utf8');
 const callbacktmpl = fs.readFileSync(templates + '/callback.template', 'utf8');
 
-function substitute(tmpl, vars) {
+function substitute(tmpl: string, vars: Record<string, string>) {
 	for (var key in vars) {
 		tmpl = tmpl.replace(new RegExp('%%' + key + '%%', 'g'), vars[key]);
 	}
 	return tmpl;
 }
 
-function sendPage(res, query) {
+function sendPage(res: http.ServerResponse, query: string) {
 	var qargs = parse_query(query);
 	if (!qargs.pzv) {
 		res.end(rawpage);
@@ -166,7 +166,7 @@ function sendPage(res, query) {
 				desc += ', size ' + size;
 			}
 			desc += '.';
-			var vars = {
+			var vars: Record<string, string> = {
 				'CANONICAL_URL': 'https://puzz.link/p?' + qargs.pzv,
 				'TITLE': title,
 				'DESCRIPTION': desc,
