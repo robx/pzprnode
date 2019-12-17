@@ -104,9 +104,9 @@ function preview(req: http.IncomingMessage, res: http.ServerResponse, query: str
 		}
 		var shape = Shape.Square;
 		if (!isNaN(cols) && !isNaN(rows)) {
-			if (rows/cols > 1.5) {
+			if (rows/cols >= 2) {
 				shape = Shape.Tall;
-			} else if (cols/rows > 1.5) {
+			} else if (cols/rows >= 2) {
 				shape = Shape.Wide;
 			}
 		}
@@ -136,10 +136,10 @@ function preview(req: http.IncomingMessage, res: http.ServerResponse, query: str
 				args.push('-resize');
 				maskargs = ['composite', '-compose', 'CopyOpacity'];
 				if (shape === Shape.Wide) {
-					args.push('x150');
+					args.push('x120');
 					maskargs.push(imgdir + '/mask-horiz.png');
 				} else if (shape === Shape.Tall) {
-					args.push('150x');
+					args.push('120x');
 					maskargs.push(imgdir + '/mask-vert.png');
 				}
 				args.push('-crop', '200x200');
