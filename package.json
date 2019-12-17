@@ -16,7 +16,8 @@
     "node": ">= 6.0.0"
   },
   "dependencies": {
+    "@types/node": "^12.12.18",
     "pzpr": "file:../pzprjs",
-    "pzpr-puzzlink": "file:../pzpr-puzzlink"
+    "typescript": "^3.7.3"
   }
 }
