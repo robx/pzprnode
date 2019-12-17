@@ -10,7 +10,7 @@ import pzpr = require('pzpr');
 
 const templates = process.env.TEMPLATE_DIR || './templates';
 const pzprdir = process.env.PZPR_DIR || '.';
-const imgdir = process.env.IMG_DIR || './dir';
+const imgdir = process.env.IMG_DIR || './img';
 
 const hostname = process.env.HTTP_NAME || '127.0.0.1';
 const port = Number(process.env.HTTP_PORT) || 3456;
