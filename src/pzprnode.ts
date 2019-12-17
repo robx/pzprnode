@@ -147,43 +147,55 @@ function substitute(tmpl: string, vars: Record<string, string>): string {
 	return tmpl;
 }
 
+function pzvopen(pzv: string): Promise<any> {
+	var p = new pzpr.Puzzle();
+	return new Promise(function(resolve, reject){
+		try {
+			p.open(pzv, () => {
+				resolve(p);
+			});
+		} catch(err) {
+			reject(err);
+		}
+	});
+}
+
 function sendPage(res: http.ServerResponse, query: string) {
 	var qargs = parse_query(query);
 	if (!qargs.pzv) {
 		res.end(rawpage);
 	}
-	const p = new pzpr.Puzzle();
-	try {
-		p.open(qargs.pzv, () => {
-			var title = p.info.en;
-			var size = "";
-			if (!isNaN(p.board.cols) && !isNaN(p.board.rows)) {
-				size = "" + p.board.rows + "×" + p.board.cols;
-			}
-			var desc = 'Solve a ' + p.info.en + ' puzzle';
-			if (size) {
-				title = size + ' ' + title;
-				desc += ', size ' + size;
-			}
-			desc += '.';
-			var vars: Record<string, string> = {
-				'CANONICAL_URL': 'https://puzz.link/p?' + qargs.pzv,
-				'TITLE': title,
-				'DESCRIPTION': desc,
-				'PREVIEW_IMG': 'https://puzz.link/pv?frame=5&' + qargs.pzv,
-				'PZV': qargs.pzv
-			};
-			res.statusCode = 200;
-			res.setHeader('Content-Type', 'text/html');
-			res.write(head);
-			res.write(substitute(metatmpl, vars));
-			res.write(substitute(callbacktmpl, vars));
-			res.end(body);
-		});
-	} catch(error) {
-		console.log('caught error', error, 'sending raw page');
+	pzvopen(qargs.pzv).then(p => {
+		var title = p.info.en;
+		var size = "";
+		if (!isNaN(p.board.cols) && !isNaN(p.board.rows)) {
+			size = "" + p.board.rows + "×" + p.board.cols;
+		}
+		var desc = 'Solve a ' + p.info.en + ' puzzle';
+		if (size) {
+			title = size + ' ' + title;
+			desc += ', size ' + size;
+		}
+		desc += '.';
+		var vars: Record<string, string> = {
+			'CANONICAL_URL': 'https://puzz.link/p?' + qargs.pzv,
+			'TITLE': title,
+			'DESCRIPTION': desc,
+			'PREVIEW_IMG': 'https://puzz.link/pv?frame=5&' + qargs.pzv,
+			'PZV': qargs.pzv
+		};
+		res.statusCode = 200;
+		res.setHeader('Content-Type', 'text/html');
+		res.write(head);
+		res.write(substitute(metatmpl, vars));
+		res.write(substitute(callbacktmpl, vars));
+		res.end(body);
+	}).catch(err => {
+		console.log('caught error', err, 'sending raw page');
+		res.statusCode = 200;
+		res.setHeader('Content-Type', 'text/html');
 		res.end(rawpage);
-	}
+	});
 }
 
 const server = http.createServer((req, res) => {
