@@ -10,6 +10,7 @@ import pzpr = require('pzpr');
 
 const templates = process.env.TEMPLATE_DIR || './templates';
 const pzprdir = process.env.PZPR_DIR || '.';
+const imgdir = process.env.IMG_DIR || './dir';
 
 const hostname = process.env.HTTP_NAME || '127.0.0.1';
 const port = Number(process.env.HTTP_PORT) || 3456;
@@ -129,13 +130,13 @@ function preview(req: http.IncomingMessage, res: http.ServerResponse, query: str
 				geom = 'x200';
 				maskargs = [
 					'composite', '-compose', 'CopyOpacity',
-					'img/mask-horiz.png', 'PNG:-', 'PNG:-'
+					IMG_DIR + '/mask-horiz.png', 'PNG:-', 'PNG:-'
 				];
 			} else if (shape === 'tall') {
 				geom = '200x';
 				maskargs = [
 					'composite', '-compose', 'CopyOpacity',
-					'img/mask-vert.png', 'PNG:-', 'PNG:-'
+					IMG_DIR + '/mask-vert.png', 'PNG:-', 'PNG:-'
 				];
 			}
 			args.push('-resize', geom);
