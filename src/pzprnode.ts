@@ -161,21 +161,24 @@ function pzvopen(pzv: string): Promise<any> {
 }
 
 interface PuzzleDetails {
+	pid: string;
+	title: string;
 	cols: number;
 	rows: number;
-	title: string;
 }
 
-async function pzvdetails(pzv: string): Promise<PuzzleDetails> {
-	const puzzle = await pzvopen(pzv);
+function pzvdetails(pzv: string): PuzzleDetails {
+	const urldata = pzpr.parser.parseURL(pzv);
+	const info = pzpr.variety(urldata.pid);
 	return {
-		cols: puzzle.board.cols,
-		rows: puzzle.board.rows,
-		title: puzzle.info.en
+		pid: urldata.pid,
+		title: info.en,
+		cols: urldata.cols,
+		rows: urldata.rows
 	}
 }
 
-async function sendPage(res: http.ServerResponse, query: string) {
+function sendPage(res: http.ServerResponse, query: string) {
 	var qargs = parse_query(query);
 	if (!qargs.pzv) {
 		res.statusCode = 200;
@@ -183,7 +186,7 @@ async function sendPage(res: http.ServerResponse, query: string) {
 		res.end(rawpage);
 	}
 	try {
-		const p = await pzvdetails(qargs.pzv);
+		const p = pzvdetails(qargs.pzv);
 		var size = "";
 		if (!isNaN(p.cols) && !isNaN(p.rows)) {
 			size = "" + p.rows + "×" + p.cols;
