@@ -189,13 +189,13 @@ function sendPage(res: http.ServerResponse, query: string) {
 const server = http.createServer((req, res) => {
 	try {
 		console.log('handling request:', req.url);
-		const u = url.parse(req.url);
+		const u = url.parse(req.url!);
 		switch (u.pathname) {
 		case '/pv':
-			preview(req, res, u.query);
+			preview(req, res, u.query || "");
 			break;
 		case '/p':
-			sendPage(res, u.query);
+			sendPage(res, u.query || "");
 			break;
 		default:
 			console.log('404', u.pathname);
