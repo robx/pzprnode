@@ -4,7 +4,11 @@ var userid = localStorage.getItem("user_id");
 ui.callbackComplete = function(puzzle, check){
 	if(!puzzle.playeronly){
 		// don't record times in edit mode
-		return
+		return;
+	}
+	if(puzzle.getConfig("variant"){
+		// completion makes no sense for variants currently
+		return;
 	}
 	var xmlhttp = false;
 	if(typeof ActiveXObject !== "undefined"){
