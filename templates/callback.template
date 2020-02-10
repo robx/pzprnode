@@ -2,6 +2,10 @@
 var token = localStorage.getItem("token");
 var userid = localStorage.getItem("user_id");
 ui.callbackComplete = function(puzzle, check){
+	if(!puzzle.playeronly){
+		// don't record times in edit mode
+		return
+	}
 	var xmlhttp = false;
 	if(typeof ActiveXObject !== "undefined"){
 		try { xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");}
