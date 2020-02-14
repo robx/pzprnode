@@ -1,7 +1,14 @@
 <script type="text/javascript">
 var token = localStorage.getItem("token");
 var userid = localStorage.getItem("user_id");
+var called = false;
 ui.callbackComplete = function(puzzle, check){
+	if(called){
+		// only record the first solve
+		return;
+	}
+	called = true;
+
 	if(!puzzle.playeronly){
 		// don't record times in edit mode
 		return;
