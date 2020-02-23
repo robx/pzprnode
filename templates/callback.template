@@ -13,7 +13,7 @@ ui.callbackComplete = function(puzzle, check){
 		// don't record times in edit mode
 		return;
 	}
-	if(puzzle.getConfig("variant"){
+	if(puzzle.getConfig("variant")){
 		// completion makes no sense for variants currently
 		return;
 	}
