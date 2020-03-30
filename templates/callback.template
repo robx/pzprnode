@@ -17,6 +17,10 @@ ui.callbackComplete = function(puzzle, check){
 		// completion makes no sense for variants currently
 		return;
 	}
+	if(ui.network.mode !== ""){
+		// don't record times when network play is active
+		return;
+	}
 	var xmlhttp = false;
 	if(typeof ActiveXObject !== "undefined"){
 		try { xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");}
