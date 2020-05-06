@@ -1,12 +1,12 @@
-#!/usr/bin/env node
+#!/usr/bin/env -S node -r esm
 
-import http = require('http');
-import child_process = require('child_process');
-import url = require('url');
-import fs = require('fs');
-import stream = require('stream');
+import * as http from 'http';
+import * as child_process from 'child_process';
+import * as url from 'url';
+import * as fs from 'fs';
+import * as stream from 'stream';
 
-import pzpr = require('pzpr');
+import pzpr from 'pzpr';
 
 const templates = process.env.TEMPLATE_DIR || './templates';
 const pzprdir = process.env.PZPR_DIR || '.';
