@@ -88,7 +88,7 @@ function preview(req: http.IncomingMessage, res: http.ServerResponse, query: str
 	if (details.cols > 100 || details.rows > 100) {
 		res.statusCode = 400;
 		res.end("oversized puzzle");
-		console.log('skipping huge puzzle:', pzv);
+		console.log('skipping large puzzle:', pzv);
 		return;
 	}
 
