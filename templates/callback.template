@@ -9,6 +9,11 @@ ui.callbackComplete = function(puzzle, check){
 	}
 	called = true;
 
+	var pzv = ui.pzv;
+	if(!pzv){
+		// no boot pzv saved
+		return;
+	}
 	if(!puzzle.playeronly){
 		// don't record times in edit mode
 		return;
@@ -33,7 +38,7 @@ ui.callbackComplete = function(puzzle, check){
 		return;
 	}
 	var data = {
-                pzv: "%%PZV%%",
+                pzv: pzv,
                 time: puzzle.getTime()
         }
 	if (token && userid) {
