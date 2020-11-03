@@ -229,7 +229,10 @@ function sendPage(res: http.ServerResponse, query: string) {
 	if (!qargs.pzv) {
 		res.statusCode = 200;
 		res.setHeader('Content-Type', 'text/html');
-		res.end(rawpage);
+		res.write(head);
+		res.write(substitute(callbacktmpl, {}));
+		res.end(body);
+		return;
 	}
 	try {
 		const p = pzvdetails(qargs.pzv);
