@@ -9,7 +9,7 @@ import stream = require('stream');
 import pzpr = require('pzpr');
 
 const templates = process.env.TEMPLATE_DIR || './templates';
-const pzprdir = process.env.PZPR_DIR || '.';
+const pzprdir = process.env.PZPR_DIR || './node_modules/pzpr/dist';
 const imgdir = process.env.IMG_DIR || './img';
 
 const hostname = process.env.HTTP_NAME || '127.0.0.1';
