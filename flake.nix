@@ -17,6 +17,12 @@
       in {
         defaultPackage = pkgs.callPackage ./nix/pzprnode.nix {
           pzprjs = pzprjs.defaultPackage.${system};
+          librsvg = pkgs.librsvg.overrideAttrs (old: with pkgs; {
+            version = "patched";
+            patches = [
+              ./nix/patches/librsvg-a1b134bf0a4c6ad884d3ae88a0767563ea68a438.diff
+            ];
+          });
         };
       }
     );

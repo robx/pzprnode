@@ -1,0 +1,72 @@
+diff --git a/src/drawing_ctx.rs b/src/drawing_ctx.rs
+index 6347304f7f06f3cb4c1c0394f5c98fef54e4b8ec..7ba1c015b95a1b0504fe0e6521460e1206ed79bb 100644
+--- a/src/drawing_ctx.rs
++++ b/src/drawing_ctx.rs
+@@ -108,6 +108,8 @@ pub struct FontOptions {
+ #[derive(Debug, Copy, Clone, PartialEq)]
+ pub enum ClipMode {
+     ClipToViewport,
++
++    // FIXME: this is not used anymore!?
+     ClipToVbox,
+ }
+ 
+@@ -1690,12 +1692,10 @@ impl DrawingCtx {
+             let elt = child.borrow_element();
+ 
+             let symbol = borrow_element_as!(child, Symbol);
++            let symbol_values = elt.get_computed_values();
+ 
+-            let clip_mode = if !values.is_overflow()
+-                || (values.overflow() == Overflow::Visible
+-                    && elt.get_specified_values().is_overflow())
+-            {
+-                Some(ClipMode::ClipToVbox)
++            let clip_mode = if !symbol_values.is_overflow() {
++                Some(ClipMode::ClipToViewport)
+             } else {
+                 None
+             };
+diff --git a/tests/fixtures/reftests/bugs-reftests/92-symbol-clip-ref.svg b/tests/fixtures/reftests/bugs-reftests/92-symbol-clip-ref.svg
+new file mode 100644
+index 0000000000000000000000000000000000000000..c319e2fac71bc4e85b86e80b38b204657d561365
+--- /dev/null
++++ b/tests/fixtures/reftests/bugs-reftests/92-symbol-clip-ref.svg
+@@ -0,0 +1,5 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
++     width="100" height="100" viewBox="0 0 100 100">
++  <rect x="0" y="0" width="40" height="40" fill="lime"/>
++</svg>
+diff --git a/tests/fixtures/reftests/bugs-reftests/92-symbol-clip.svg b/tests/fixtures/reftests/bugs-reftests/92-symbol-clip.svg
+new file mode 100644
+index 0000000000000000000000000000000000000000..f25b65b247e880f3dd0abdbc3c41fbd569360dab
+--- /dev/null
++++ b/tests/fixtures/reftests/bugs-reftests/92-symbol-clip.svg
+@@ -0,0 +1,12 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
++     width="100" height="100" viewBox="0 0 100 100">
++  <defs>
++    <symbol id="foo" viewBox="0 0 50 50">
++      <rect x="0" y="0" width="40" height="40" fill="lime"/>
++      <rect x="50" y="0" width="40" height="40" fill="red"/>
++    </symbol>
++  </defs>
++
++  <use x="0" y="0" width="50" height="50" xlink:href="#foo"/>
++</svg>
+diff --git a/tests/src/reference.rs b/tests/src/reference.rs
+index 665baec01ff608a4d3a2416e36245ccc91a8e955..00d6428c118e0b4a7f490336286eda2dcfe8c800 100644
+--- a/tests/src/reference.rs
++++ b/tests/src/reference.rs
+@@ -406,3 +406,9 @@ test_svg_reference!(
+     "tests/fixtures/reftests/bugs-reftests/880-stroke-wide-line.svg",
+     "tests/fixtures/reftests/bugs-reftests/880-stroke-wide-line-ref.svg"
+ );
++
++test_svg_reference!(
++    bug_92_symbol_clip,
++    "tests/fixtures/reftests/bugs-reftests/92-symbol-clip.svg",
++    "tests/fixtures/reftests/bugs-reftests/92-symbol-clip-ref.svg"
++);
