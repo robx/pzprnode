@@ -3,7 +3,7 @@
 
   inputs.flake-utils.url = "github:numtide/flake-utils";
   inputs.nixpkgs.url = github:NixOS/nixpkgs/nixos-22.05;
-  inputs.pzprjs.url = github:robx/pzprjs/nix;
+  inputs.pzprjs.url = github:robx/pzprjs;
 
   outputs = {
     self,

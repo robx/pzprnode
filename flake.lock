@@ -85,16 +85,15 @@
         "npmlock2nix-repo": "npmlock2nix-repo"
       },
       "locked": {
-        "lastModified": 1662130447,
-        "narHash": "sha256-HoSo3GXSfEzdNKRq4dkjfXjLnfMHQtHNYpLUmWJlpyE=",
+        "lastModified": 1667831179,
+        "narHash": "sha256-dP2BlPI8q1XebeI5K/RexO6+PeQa1UOoPm/v3byVvJE=",
         "owner": "robx",
         "repo": "pzprjs",
-        "rev": "6e3fb44f9b2886fecdbf3334254dc3d35277b579",
+        "rev": "6823a2ca2af5214a36b22847f92b55defd54e3f0",
         "type": "github"
       },
       "original": {
         "owner": "robx",
-        "ref": "nix",
         "repo": "pzprjs",
         "type": "github"
       }
