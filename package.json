@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@types/node": "^12.12.18",
+    "esm": "^3.2.25",
     "pzpr": "file:../pzprjs",
     "typescript": "^3.7.3"
   }

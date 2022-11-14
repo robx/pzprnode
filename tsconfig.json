@@ -2,7 +2,7 @@
   "compilerOptions": {
     "noImplicitAny": true,
     "strictNullChecks": true,
-    "module": "commonjs",
+    "module": "es6",
     "outDir": "./built",
     "allowJs": true,
     "target": "es6"
