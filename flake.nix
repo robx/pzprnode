@@ -18,6 +18,9 @@
         defaultPackage = pkgs.callPackage ./nix/pzprnode.nix {
           pzprjs = pzprjs.defaultPackage.${system};
         };
+        devShells.default = pkgs.mkShell {
+          buildInputs = with pkgs; [nodejs];
+        };
       }
     );
 }
