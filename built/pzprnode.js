@@ -12,6 +12,7 @@ const imgdir = process.env.IMG_DIR || './img';
 const hostname = process.env.HTTP_NAME || '127.0.0.1';
 const port = Number(process.env.HTTP_PORT) || 3456;
 const globalAny = global;
+// hello world!
 var samples = {};
 globalAny.ui = {
     debug: {
