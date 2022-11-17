@@ -52,6 +52,7 @@ function parse_query(query) {
         thumb: false,
         frame: 0,
         svgout: false,
+        bank: null,
         pzv: '',
     };
     for (var part of parts) {
@@ -63,6 +64,17 @@ function parse_query(query) {
         }
         else if (part.match(/^frame=([0-9]+)$/)) {
             args.frame = +RegExp.$1;
+        }
+        else if (part.match(/^bank(=(.*))?$/)) {
+            switch (RegExp.$2) {
+                case "no":
+                case "0":
+                case "false":
+                    args.bank = false;
+                    break;
+                default:
+                    args.bank = true;
+            }
         }
         else if (args.pzv === '' && part.match(/^[\w-]+/)) {
             args.pzv = part;
@@ -122,6 +134,7 @@ function preview(req, res, query) {
     const canvas = {};
     const p = new pzpr.Puzzle(canvas);
     p.open(pzv, () => {
+        var _a;
         const cols = details.cols;
         const rows = details.rows;
         let Shape;
@@ -142,7 +155,11 @@ function preview(req, res, query) {
         p.setMode('play');
         p.setConfig('undefcell', false);
         p.setConfig('autocmp', false);
-        const svg = p.toBuffer('svg', 0, 30);
+        var options = { cellsize: 30 };
+        if (p.board.bank) {
+            options.bank = (_a = qargs.bank, (_a !== null && _a !== void 0 ? _a : p.board.bank.shouldDrawBank()));
+        }
+        const svg = p.toBuffer('svg', 0, options);
         if (qargs.svgout) {
             res.statusCode = 200;
             res.setHeader('Content-Type', 'image/svg+xml');

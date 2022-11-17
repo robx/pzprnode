@@ -64,6 +64,7 @@ function parse_query(query: string){
 		thumb: false,
 		frame: 0,
 		svgout: false,
+		bank: null as boolean | null,
 		pzv: '',
 	};
 	for (var part of parts) {
@@ -73,6 +74,16 @@ function parse_query(query: string){
 			args.svgout = true;
 		} else if (part.match(/^frame=([0-9]+)$/)) {
 			args.frame = +RegExp.$1
+		} else if (part.match(/^bank(=(.*))?$/)) {
+			switch (RegExp.$2) {
+			case "no":
+			case "0":
+			case "false":
+				args.bank = false;
+				break;
+			default:
+				args.bank = true;
+			}
 		} else if (args.pzv === '' && part.match(/^[\w-]+/)) {
 			args.pzv = part;
 		}
@@ -163,7 +174,11 @@ function preview(req: http.IncomingMessage, res: http.ServerResponse, query: str
 		p.setMode('play');
 		p.setConfig('undefcell', false);
 		p.setConfig('autocmp', false);
-		const svg = p.toBuffer('svg', 0, 30);
+		var options: any = { cellsize: 30 };
+		if (p.board.bank) {
+			options.bank = qargs.bank ?? p.board.bank.shouldDrawBank();
+		}
+		const svg = p.toBuffer('svg', 0, options);
 
 		if (qargs.svgout) {
 			res.statusCode = 200;
