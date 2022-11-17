@@ -15,6 +15,49 @@ const imgdir = process.env.IMG_DIR || './img';
 const hostname = process.env.HTTP_NAME || '127.0.0.1';
 const port = Number(process.env.HTTP_PORT) || 3456;
 
+const globalAny: any = global;
+var samples: any = {};
+
+globalAny.ui = {
+	debug: {
+		addDebugData: function(pid: string, data: { failcheck: any[][] }) {
+			samples[pid] = [];
+			for (var check of data.failcheck) {
+				type Check = {
+					code: string,
+					puzzle: string,
+					flags?: any,
+				};
+				var c: Check = {
+					code: check[0],
+					puzzle: check[1],
+				}
+				if (check.length > 2) {
+					c.flags = check[2];
+				}
+				samples[pid].push(c);
+			}
+		},
+		addRules: function(pid: string, newrules: any) {},
+	},
+}
+
+function loadsample(pid: string): string {
+	var mod = 'pzpr/dist/js/pzpr-samples/' + pid;
+	require(mod);
+	for (var check of samples[pid]) {
+		if (check.code !== null) {
+			continue;
+		}
+		if (check.flags && check.flags.skiprules) {
+			continue;
+		}
+		return check.puzzle;
+	}
+	console.log("no sample found", pid);
+	return '';
+}
+
 function parse_query(query: string){
 	const parts = query.split('&');
 	var args = {
@@ -30,7 +73,7 @@ function parse_query(query: string){
 			args.svgout = true;
 		} else if (part.match(/^frame=([0-9]+)$/)) {
 			args.frame = +RegExp.$1
-		} else if (args.pzv === '' && part.match(/^[\w-]+\//)) {
+		} else if (args.pzv === '' && part.match(/^[\w-]+/)) {
 			args.pzv = part;
 		}
 	}
@@ -55,6 +98,7 @@ interface PuzzleDetails {
 	title: string;
 	cols: number;
 	rows: number;
+	empty: boolean;
 }
 
 function pzvdetails(pzv: string): PuzzleDetails {
@@ -64,7 +108,8 @@ function pzvdetails(pzv: string): PuzzleDetails {
 		pid: urldata.pid,
 		title: info.en,
 		cols: urldata.cols,
-		rows: urldata.rows
+		rows: urldata.rows,
+		empty: !urldata.body,
 	}
 }
 
@@ -84,12 +129,16 @@ function preview(req: http.IncomingMessage, res: http.ServerResponse, query: str
 	// deal with <type>_edit links
         var pzv = qargs.pzv.replace(/_edit/, '');
 
-	var details = pzvdetails(pzv);
+	var details = pzvdetails(qargs.pzv);
 	if (details.cols > 100 || details.rows > 100) {
 		res.statusCode = 400;
 		res.end("oversized puzzle");
 		console.log('skipping large puzzle:', pzv);
 		return;
+	}
+
+	if (details.empty) {
+		pzv = loadsample(details.pid);
 	}
 
 	const canvas = {};
@@ -224,7 +273,7 @@ function substitute(tmpl: string, vars: Record<string, string>): string {
 	return tmpl;
 }
 
-function sendPage(res: http.ServerResponse, query: string) {
+function page(res: http.ServerResponse, query: string) {
 	var qargs = parse_query(query);
 	if (!qargs.pzv) {
 		res.statusCode = 200;
@@ -235,13 +284,13 @@ function sendPage(res: http.ServerResponse, query: string) {
 		return;
 	}
 	try {
-		const p = pzvdetails(qargs.pzv);
+		const details = pzvdetails(qargs.pzv);
 		var size = "";
-		if (!isNaN(p.cols) && !isNaN(p.rows)) {
-			size = "" + p.rows + "×" + p.cols;
+		if (!isNaN(details.cols) && !isNaN(details.rows)) {
+			size = "" + details.rows + "×" + details.cols;
 		}
-		var title = p.title;
-		var desc = 'Solve a ' + p.title + ' puzzle';
+		var title = details.title;
+		var desc = (details.empty ? 'Create' : 'Solve') + ' a ' + details.title + ' puzzle';
 		if (size) {
 			title = size + ' ' + title;
 			desc += ', size ' + size;
@@ -277,7 +326,7 @@ const server = http.createServer((req, res) => {
 			preview(req, res, u.query || "");
 			break;
 		case '/p':
-			sendPage(res, u.query || "");
+			page(res, u.query || "");
 			break;
 		default:
 			console.log('404', u.pathname);
